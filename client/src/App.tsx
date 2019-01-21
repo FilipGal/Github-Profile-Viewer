@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import UserProfile from './components/GetUserProfile'
+import { FetchProfile } from './components/GetUserProfile'
 import './App.css'
 
 class App extends Component {
@@ -7,7 +7,7 @@ class App extends Component {
     return (
       <div className="App">
         <header className="App-header">
-          <UserProfile />
+          <FetchProfile />
         </header>
       </div>
     )

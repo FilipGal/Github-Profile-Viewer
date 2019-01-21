@@ -1,34 +1,51 @@
 import * as React from 'react'
 import axios from 'axios'
 
-const { useState, useEffect } = React
+const { useState, useCallback } = React
 
 function searchGithub(query: string) {
   return axios.get(`https://api.github.com/users/${query}`).then(res => res)
 }
 
-export default function displayProfile() {
+export function FetchProfile() {
   const [searchValue, setSearchValue] = useState('')
-  const [profile, setProfile] = useState({})
-  const handleChange = (e: any) => setSearchValue(e.target.value)
-  console.log(profile)
+  const [profile, setProfile] = useState(undefined)
+  const [statusCode, setStatusCode] = useState(0)
 
-  useEffect(
+  const onChangeInput = useCallback(e => setSearchValue(e.target.value), [])
+
+  const onButtonClick = useCallback(
     () => {
       searchGithub(searchValue)
+        .then((profile: any) => {
+          setProfile(profile), setStatusCode(profile.status)
+        })
+        .catch(err => setStatusCode(err.response.status))
     },
-    [profile, setProfile]
+    [searchValue]
+  )
+
+  const searchUser = useCallback(
+    e => {
+      e.preventDefault()
+      onButtonClick()
+    },
+    [searchValue]
   )
 
   return (
-    <div>
+    <form onSubmit={searchUser}>
       <div>
-        <input type="text" onChange={e => handleChange(e)} />
+        {statusCode === 404 ? <p>That user does not exist</p> : displayUserProfile(profile)}
+
+        <input type="text" onChange={onChangeInput} placeholder="Search for a user" />
         <br />
-        <button onClick={() => searchGithub(searchValue).then(profile => setProfile(profile))}>
-          Search
-        </button>
+        <button onClick={searchUser}>Search</button>
       </div>
-    </div>
+    </form>
   )
+}
+
+function displayUserProfile(profile: any) {
+  return profile !== undefined ? <p>User {profile.data.login} exists</p> : null
 }
